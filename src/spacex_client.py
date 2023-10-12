@@ -22,4 +22,4 @@ class SpaceXClient:
         except Exception as e:
             self.logger.error(f"An unexpected error occurred while fetching data: {e}")
 
-        return []  # return an empty list in case of an error
+        return []

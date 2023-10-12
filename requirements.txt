@@ -4,3 +4,6 @@ pytest==7.2.1
 pytest-aiohttp==0.3.0
 pytest-asyncio==0.15.1
 pytest-mock==3.6.1
+anyio==3.5.0
+asyncio==0.15.1
+mock==3.10.0
