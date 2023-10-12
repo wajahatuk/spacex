@@ -5,13 +5,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-DB_CONFIG = {
-    "user": "uadmin",
-    "password": "password123",
-    "database": "spacex",
-    "host": "localhost",
-    "port": 5432
-}
+with open("config.json", "r") as f:
+    DB_CONFIG = json.load(f)
 
 class DatabaseManager:
     def __init__(self):
