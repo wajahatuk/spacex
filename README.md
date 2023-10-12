@@ -1,6 +1,6 @@
 ## SpaceX Data Pipeline
 
-This project aims to create a data pipeline for fetching SpaceX launch data and storing it into a database.
+This project aims to create a data pipeline for fetching SpaceX launch data, storing it into a database, and further normalizing the data into separate tables for better data structure and organization.
 
 ### Modules
 
@@ -8,16 +8,25 @@ This project aims to create a data pipeline for fetching SpaceX launch data and 
    A module that fetches data from the SpaceX API.
    
 2. **Database Manager (`database_manager.py`):**
-   Manages database connections and handles operations like creating tables and inserting data.
+   Manages database connections and handles operations like creating tables, inserting data, and further normalizing the data into various tables.
    
 3. **Data Pipeline (`datapipeline.py`):**
-   Orchestrates the data pipeline flow, from fetching data from the SpaceX API to inserting it into the database.
+   Orchestrates the data pipeline flow, from fetching data from the SpaceX API to inserting and normalizing it into the database.
 
 4. **Main Test (`main.py`):**
    Contains the primary test for the SpaceX client.
 
 5. **Unit Tests (`test_spacex_client.py`):**
    Contains unit tests for the SpaceX client.
+
+### Database Structure
+
+In addition to the main `spacex_launches` table, the database also has normalized tables:
+
+- `spacex_cores`: Contains detailed information about rocket cores.
+- `spacex_fairings`: Contains details about rocket fairings.
+- `spacex_links`: Links associated with each launch.
+- `spacex_failures`: Information about any failures associated with a launch.
 
 ### Installation & Setup
 
@@ -36,6 +45,11 @@ To run the pipeline:
 python src/main.py
 ```
 
+This script will:
+- Fetch data from the SpaceX API
+- Insert the fetched data into the `spacex_launches` table in the database
+- Normalize the data and insert it into additional tables like `spacex_cores`, `spacex_fairings`, etc.
+
 ### Running Tests
 
 To run tests:
@@ -45,4 +59,4 @@ pytest tests/
 
 ### Logging
 
-The system uses Python's built-in logging. It logs basic INFO level messages, like successful data insertions.
+The system uses Python's built-in logging. It logs basic INFO level messages, like successful data insertions and normalization status.
