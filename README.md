@@ -22,11 +22,12 @@ This project aims to create a data pipeline for fetching SpaceX launch data and 
 ### Installation & Setup
 
 **Install Dependencies:**
+    
+If you're using pip:
 
-    If you're using pip:
-    ```bash
+   ```bash
     pip install -r requirements.txt
-    ```
+  ```
 
 ### Running the Pipeline
 
