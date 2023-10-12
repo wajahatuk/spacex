@@ -52,7 +52,61 @@ class DatabaseManager:
                 id TEXT PRIMARY KEY,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP
-            );"""
+            );
+            	-- Create spacex_cores table
+            CREATE TABLE IF NOT EXISTS spacex_cores (
+                core_id SERIAL PRIMARY KEY,
+                launch_id TEXT REFERENCES spacex_launches(id),
+                core TEXT,
+                legs BOOLEAN,
+                flight INTEGER,
+                reused BOOLEAN,
+                landpad TEXT,
+                gridfins BOOLEAN,
+                landing_type TEXT,
+                landing_attempt BOOLEAN,
+                landing_success BOOLEAN
+            );
+            
+            -- Create spacex_fairings table
+            CREATE TABLE IF NOT EXISTS spacex_fairings (
+                fairing_id SERIAL PRIMARY KEY,
+                launch_id TEXT REFERENCES spacex_launches(id),
+                reused BOOLEAN,
+                recovered BOOLEAN,
+                recovery_attempt BOOLEAN,
+                ships TEXT
+            );
+            
+            -- Create spacex_links table
+            CREATE TABLE IF NOT EXISTS spacex_links (
+                link_id SERIAL PRIMARY KEY,
+                launch_id TEXT REFERENCES spacex_launches(id),
+                patch_large TEXT,
+                patch_small TEXT,
+                flickr_small TEXT[],  -- Assuming arrays to store multiple links
+                flickr_original TEXT[],
+                reddit_media TEXT,
+                reddit_launch TEXT,
+                reddit_campaign TEXT,
+                reddit_recovery TEXT,
+                article TEXT,
+                webcast TEXT,
+                presskit TEXT,
+                wikipedia TEXT,
+                youtube_id TEXT
+            );
+            
+            -- Create spacex_failures table
+            CREATE TABLE IF NOT EXISTS spacex_failures (
+                failure_id SERIAL PRIMARY KEY,
+                launch_id TEXT REFERENCES spacex_launches(id),
+                time INTEGER,
+                reason TEXT,
+                altitude INTEGER
+            );
+            """
+
         await self.conn.execute(query)
 
     async def get_existing_ids(self):
@@ -110,8 +164,67 @@ class DatabaseManager:
 
             logging.info("Data Inserted Successfully")
 
+
+            Other_inserts = """
+        
+                        INSERT INTO  spacex_cores (launch_id, core, legs, flight, reused, landpad, gridfins, landing_type, landing_attempt, landing_success)
+                        SELECT 
+                            id,
+                            (cores->0->>'core')::VARCHAR AS core,  -- Extracting first core as an example; you might need a loop for multiple cores
+                            (cores->0->>'legs')::BOOLEAN AS legs,
+                            (cores->0->>'flight')::INTEGER AS flight,
+                            (cores->0->>'reused')::BOOLEAN AS reused,
+                            (cores->0->>'landpad')::VARCHAR AS landpad,
+                            (cores->0->>'gridfins')::BOOLEAN AS gridfins,
+                            (cores->0->>'landing_type')::VARCHAR AS landing_type,
+                            (cores->0->>'landing_attempt')::BOOLEAN AS landing_attempt,
+                            (cores->0->>'landing_success')::BOOLEAN AS landing_success
+                        FROM spacex_launches
+                        WHERE id NOT IN (SELECT launch_id FROM spacex_cores);
+                        
+                        INSERT INTO spacex_fairings (launch_id, reused, recovered, recovery_attempt, ships)
+                        SELECT 
+                            id,
+                            (fairings->>'reused')::BOOLEAN AS reused,
+                            (fairings->>'recovered')::BOOLEAN AS recovered,
+                            (fairings->>'recovery_attempt')::BOOLEAN AS recovery_attempt,
+                            fairings->>'ships' AS ships
+                        FROM spacex_launches
+                        WHERE id NOT IN (SELECT launch_id FROM spacex_fairings);
+                    
+                        INSERT INTO spacex_links (launch_id, patch_large, patch_small, flickr_small, flickr_original, reddit_media, reddit_launch, reddit_campaign, reddit_recovery, article, webcast, presskit, wikipedia, youtube_id)
+                        SELECT 
+                            id,
+                            links->'patch'->>'large' AS patch_large,
+                            links->'patch'->>'small' AS patch_small,
+                            ARRAY(SELECT jsonb_array_elements_text(links->'flickr'->'small')) AS flickr_small,
+                            ARRAY(SELECT jsonb_array_elements_text(links->'flickr'->'original')) AS flickr_original,
+                            links->'reddit'->>'media' AS reddit_media,
+                            links->'reddit'->>'launch' AS reddit_launch,
+                            links->'reddit'->>'campaign' AS reddit_campaign,
+                            links->'reddit'->>'recovery' AS reddit_recovery,
+                            links->>'article' AS article,
+                            links->>'webcast' AS webcast,
+                            links->>'presskit' AS presskit,
+                            links->>'wikipedia' AS wikipedia,
+                            links->>'youtube_id' AS youtube_id
+                        FROM spacex_launches
+                        WHERE id NOT IN (SELECT launch_id FROM spacex_links);
+                    
+                        INSERT INTO  spacex_failures (launch_id, time, reason, altitude)
+                        SELECT 
+                            id,
+                            (failures->0->>'time')::INTEGER AS time,  -- Extracting first failure as an example; you might need a loop for multiple failures
+                            failures->0->>'reason' AS reason,
+                            (failures->0->>'altitude')::INTEGER AS altitude
+                        FROM spacex_launches
+                        WHERE id NOT IN (SELECT launch_id FROM spacex_failures);
+                            """
+
+            await self.conn.execute(Other_inserts)
+            logging.info("Data Inserted Successfully Into Normalize Tables")
+
         except Exception as e:
             print(f"Database error: {e}")
-
         finally:
             await self.conn.close()
