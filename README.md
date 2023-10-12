@@ -37,6 +37,17 @@ If you're using pip:
    ```bash
     pip install -r requirements.txt
   ```
+Make sure to add config.json within the project:
+
+   ```json
+{
+    "user": "your-usernam",
+    "password": "your-password",
+    "database": "your-database",
+    "host": "your-host",
+    "port": "your-port"
+}
+   ```
 
 ### Running the Pipeline
 
