@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime, timezone
 import asyncpg
 import logging
@@ -221,5 +222,3 @@ class DatabaseManager:
 
         except Exception as e:
             print(f"Database error: {e}")
-        finally:
-            await self.conn.close()

@@ -65,7 +65,7 @@ This script will:
 
 To run tests:
 ```bash
-pytest tests/
+pytest tests/ -v
 ```
 
 ### Logging
